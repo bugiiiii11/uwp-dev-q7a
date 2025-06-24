@@ -10,108 +10,49 @@
       }
     }
   ],
-  "headers": [
+  "routes": [
     {
-      "source": "/unity-builds/medashooter/Build/medashooter.framework.js.gz",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/javascript"
-        },
-        {
-          "key": "Content-Encoding",
-          "value": "gzip"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000"
-        }
-      ]
+      "src": "/unity-builds/.*\\.js\\.gz$",
+      "dest": "$0",
+      "headers": {
+        "Content-Encoding": "gzip",
+        "Content-Type": "text/javascript",
+        "Cache-Control": "public, max-age=31536000"
+      }
     },
     {
-      "source": "/unity-builds/medashooter/Build/medashooter.data.gz",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/octet-stream"
-        },
-        {
-          "key": "Content-Encoding",
-          "value": "gzip"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000"
-        }
-      ]
+      "src": "/unity-builds/.*\\.gz$",
+      "dest": "$0",
+      "headers": {
+        "Content-Encoding": "gzip",
+        "Content-Type": "application/octet-stream",
+        "Cache-Control": "public, max-age=31536000"
+      }
     },
     {
-      "source": "/unity-builds/medashooter/Build/medashooter.wasm.gz",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/octet-stream"
-        },
-        {
-          "key": "Content-Encoding",
-          "value": "gzip"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000"
-        }
-      ]
+      "src": "/unity-builds/(.*)",
+      "dest": "/unity-builds/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000"
+      }
     },
     {
-      "source": "/unity-builds/medashooter/Build/medashooter.loader.js",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/javascript"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000"
-        }
-      ]
+      "src": "/static/(.*)",
+      "dest": "/static/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000"
+      }
     },
     {
-      "source": "/unity-builds/(.*).gz",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/octet-stream"
-        },
-        {
-          "key": "Content-Encoding",
-          "value": "gzip"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000"
-        }
-      ]
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|mp4|webp|json))",
+      "dest": "/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=86400"
+      }
     },
     {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        }
-      ]
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
