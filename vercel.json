@@ -11,87 +11,41 @@
   ],
   "headers": [
     {
-      "source": "/unity-builds/(.*\\.loader\\.js)$",
+      "source": "/unity-builds/medashooter/Build/medashooter.framework.js.gz",
       "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/javascript"
-        },
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000"
-        }
-      ]
-    },
-    {
-      "source": "/unity-builds/(.*\\.framework\\.js\\.gz)$",
-      "headers": [
-        {
-          "key": "Content-Encoding",
-          "value": "gzip"
-        },
         {
           "key": "Content-Type",
           "value": "text/javascript"
         },
         {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000"
+          "key": "Content-Encoding",
+          "value": "gzip"
         }
       ]
     },
     {
-      "source": "/unity-builds/(.*\\.data\\.gz)$",
+      "source": "/unity-builds/medashooter/Build/medashooter.data.gz",
       "headers": [
-        {
-          "key": "Content-Encoding",
-          "value": "gzip"
-        },
         {
           "key": "Content-Type",
           "value": "application/octet-stream"
         },
         {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000"
+          "key": "Content-Encoding",
+          "value": "gzip"
         }
       ]
     },
     {
-      "source": "/unity-builds/(.*\\.wasm\\.gz)$",
+      "source": "/unity-builds/medashooter/Build/medashooter.wasm.gz",
       "headers": [
-        {
-          "key": "Content-Encoding",
-          "value": "gzip"
-        },
         {
           "key": "Content-Type",
           "value": "application/octet-stream"
         },
         {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
+          "key": "Content-Encoding",
+          "value": "gzip"
         }
       ]
     }
