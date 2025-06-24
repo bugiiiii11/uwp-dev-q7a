@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "uwp-dev-q7a",
   "builds": [
     {
       "src": "package.json",
@@ -10,48 +9,71 @@
       }
     }
   ],
-  "routes": [
-    {
-      "src": "/unity-builds/.*\\.loader\\.js$",
-      "dest": "$0",
-      "headers": {
-        "Content-Type": "application/javascript",
-        "Cache-Control": "public, max-age=31536000"
-      }
-    },
-    {
-      "src": "/unity-builds/.*\\.framework\\.js\\.gz$",
-      "dest": "$0",
-      "headers": {
-        "Content-Encoding": "gzip",
-        "Content-Type": "text/javascript",
-        "Cache-Control": "public, max-age=31536000"
-      }
-    },
-    {
-      "src": "/unity-builds/.*\\.data\\.gz$",
-      "dest": "$0",
-      "headers": {
-        "Content-Encoding": "gzip",
-        "Content-Type": "application/octet-stream",
-        "Cache-Control": "public, max-age=31536000"
-      }
-    },
-    {
-      "src": "/unity-builds/.*\\.wasm\\.gz$",
-      "dest": "$0",
-      "headers": {
-        "Content-Encoding": "gzip",
-        "Content-Type": "application/octet-stream",
-        "Cache-Control": "public, max-age=31536000"
-      }
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
   "headers": [
+    {
+      "source": "/unity-builds/(.*\\.loader\\.js)$",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000"
+        }
+      ]
+    },
+    {
+      "source": "/unity-builds/(.*\\.framework\\.js\\.gz)$",
+      "headers": [
+        {
+          "key": "Content-Encoding",
+          "value": "gzip"
+        },
+        {
+          "key": "Content-Type",
+          "value": "text/javascript"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000"
+        }
+      ]
+    },
+    {
+      "source": "/unity-builds/(.*\\.data\\.gz)$",
+      "headers": [
+        {
+          "key": "Content-Encoding",
+          "value": "gzip"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/octet-stream"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000"
+        }
+      ]
+    },
+    {
+      "source": "/unity-builds/(.*\\.wasm\\.gz)$",
+      "headers": [
+        {
+          "key": "Content-Encoding",
+          "value": "gzip"
+        },
+        {
+          "key": "Content-Type",
+          "value": "application/octet-stream"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [
@@ -72,6 +94,12 @@
           "value": "strict-origin-when-cross-origin"
         }
       ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
