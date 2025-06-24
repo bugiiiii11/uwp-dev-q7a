@@ -9,51 +9,45 @@
       }
     }
   ],
-  "headers": [
+  "routes": [
     {
-      "source": "/unity-builds/medashooter/Build/medashooter.framework.js.gz",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "text/javascript"
-        },
-        {
-          "key": "Content-Encoding",
-          "value": "gzip"
-        }
-      ]
+      "src": "/unity-builds/medashooter/Build/medashooter\\.framework\\.js\\.gz$",
+      "dest": "/unity-builds/medashooter/Build/medashooter.framework.js.gz",
+      "headers": {
+        "Content-Type": "text/javascript",
+        "Content-Encoding": "gzip",
+        "Cache-Control": "public, max-age=31536000"
+      }
     },
     {
-      "source": "/unity-builds/medashooter/Build/medashooter.data.gz",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/octet-stream"
-        },
-        {
-          "key": "Content-Encoding",
-          "value": "gzip"
-        }
-      ]
+      "src": "/unity-builds/medashooter/Build/medashooter\\.data\\.gz$",
+      "dest": "/unity-builds/medashooter/Build/medashooter.data.gz",
+      "headers": {
+        "Content-Type": "application/octet-stream",
+        "Content-Encoding": "gzip",
+        "Cache-Control": "public, max-age=31536000"
+      }
     },
     {
-      "source": "/unity-builds/medashooter/Build/medashooter.wasm.gz",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/octet-stream"
-        },
-        {
-          "key": "Content-Encoding",
-          "value": "gzip"
-        }
-      ]
-    }
-  ],
-  "rewrites": [
+      "src": "/unity-builds/medashooter/Build/medashooter\\.wasm\\.gz$",
+      "dest": "/unity-builds/medashooter/Build/medashooter.wasm.gz",
+      "headers": {
+        "Content-Type": "application/octet-stream",
+        "Content-Encoding": "gzip",
+        "Cache-Control": "public, max-age=31536000"
+      }
+    },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/unity-builds/medashooter/Build/medashooter\\.loader\\.js$",
+      "dest": "/unity-builds/medashooter/Build/medashooter.loader.js",
+      "headers": {
+        "Content-Type": "application/javascript",
+        "Cache-Control": "public, max-age=31536000"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
