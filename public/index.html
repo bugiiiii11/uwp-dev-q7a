@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#FF8C00" />
+    <meta name="description" content="Unity WebGL Performance Test Environment" />
+    
+    <!-- Prevent indexing by search engines -->
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="googlebot" content="noindex, nofollow">
+    
+    <!-- Security headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    
+    <title>Unity WebGL Performance Test</title>
+    
+    <!-- Preload critical resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <style>
+      /* Critical CSS for loading screen */
+      body {
+        margin: 0;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        font-family: 'Segoe UI', sans-serif;
+        color: white;
+      }
+      
+      .loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        z-index: 9999;
+      }
+      
+      .loading-spinner {
+        width: 60px;
+        height: 60px;
+        border: 4px solid rgba(255, 140, 0, 0.3);
+        border-top: 4px solid #FF8C00;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 30px;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .loading-text {
+        color: #FF8C00;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 15px;
+        text-align: center;
+      }
+      
+      .loading-subtitle {
+        color: #ccc;
+        font-size: 16px;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      
+      .loading-warning {
+        background: rgba(220, 53, 69, 0.1);
+        border: 2px solid #dc3545;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px;
+        text-align: center;
+        color: #ff6b6b;
+        max-width: 600px;
+      }
+      
+      #root {
+        opacity: 0;
+        transition: opacity 0.5s ease-in;
+      }
+      
+      .fade-in {
+        opacity: 1 !important;
+      }
+    </style>
+  </head>
+  <body>
+    <noscript>
+      <div style="text-align: center; padding: 50px; color: #dc3545;">
+        <h2>JavaScript Required</h2>
+        <p>This Unity WebGL performance test requires JavaScript to function.</p>
+        <p>Please enable JavaScript and reload the page.</p>
+      </div>
+    </noscript>
+    
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">🎮 Unity WebGL Performance Test</div>
+      <div class="loading-subtitle">Initializing development environment...</div>
+      
+      <div class="loading-warning">
+        <strong>⚠️ DEVELOPMENT ENVIRONMENT ⚠️</strong><br>
+        Internal testing only - Performance analysis & debugging tools<br>
+        <small>Access may be logged for development purposes</small>
+      </div>
+    </div>
+    
+    <!-- React App Root -->
+    <div id="root"></div>
+    
+    <!-- Initialization Script -->
+    <script>
+      // Global error handling
+      window.addEventListener('error', function(e) {
+        console.error('Global error:', e.error);
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+          loadingScreen.innerHTML = `
+            <div style="text-align: center; color: #dc3545; padding: 40px;">
+              <h2>⚠️ Initialization Error</h2>
+              <p style="margin: 20px 0;">${e.message}</p>
+              <button onclick="window.location.reload()" style="
+                padding: 12px 24px;
+                background: #007acc;
+                color: white;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: bold;
+              ">🔄 Reload Application</button>
+            </div>
+          `;
+        }
+      });
+      
+      // Development access logging
+      console.info('%c🔒 Unity WebGL Dev Environment Access', 'color: #FF8C00; font-weight: bold; font-size: 16px;');
+      console.info('Timestamp:', new Date().toISOString());
+      console.info('User Agent:', navigator.userAgent);
+      console.info('Referrer:', document.referrer || 'Direct access');
+      console.info('Screen:', screen.width + 'x' + screen.height);
+      
+      // Performance monitoring
+      if (window.performance) {
+        window.addEventListener('load', function() {
+          const timing = window.performance.timing;
+          const loadTime = timing.loadEventEnd - timing.navigationStart;
+          console.info('📊 Page load time:', loadTime + 'ms');
+          
+          if (window.performance.memory) {
+            const memory = window.performance.memory;
+            console.info('💾 Memory usage:', {
+              used: Math.round(memory.usedJSHeapSize / 1024 / 1024) + 'MB',
+              total: Math.round(memory.totalJSHeapSize / 1024 / 1024) + 'MB',
+              limit: Math.round(memory.jsHeapSizeLimit / 1024 / 1024) + 'MB'
+            });
+          }
+        });
+      }
+      
+      // Hide loading screen when React app is ready
+      window.addEventListener('DOMContentLoaded', function() {
+        // Minimum loading time for better UX
+        setTimeout(() => {
+          const loadingScreen = document.getElementById('loading-screen');
+          const root = document.getElementById('root');
+          
+          if (loadingScreen && root) {
+            loadingScreen.style.opacity = '0';
+            root.classList.add('fade-in');
+            
+            setTimeout(() => {
+              loadingScreen.style.display = 'none';
+            }, 500);
+          }
+        }, 2000); // 2 second minimum loading time
+      });
+      
+      // Keyboard shortcuts for development
+      document.addEventListener('keydown', function(e) {
+        // Ctrl+Shift+D for debug info
+        if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+          e.preventDefault();
+          console.group('🐛 Debug Information');
+          console.info('Environment: Development');
+          console.info('React Version: 18.3.1');
+          console.info('Unity WebGL: react-unity-webgl@9.9.0');
+          console.info('Build Tool: Create React App');
+          console.groupEnd();
+        }
+        
+        // Ctrl+Shift+R for force reload
+        if (e.ctrlKey && e.shiftKey && e.key === 'R') {
+          e.preventDefault();
+          console.info('🔄 Force reloading...');
+          window.location.reload(true);
+        }
+        
+        // Ctrl+Shift+M for memory info
+        if (e.ctrlKey && e.shiftKey && e.key === 'M') {
+          e.preventDefault();
+          if (window.performance.memory) {
+            const mem = window.performance.memory;
+            console.table({
+              'Used JS Heap': Math.round(mem.usedJSHeapSize / 1024 / 1024) + 'MB',
+              'Total JS Heap': Math.round(mem.totalJSHeapSize / 1024 / 1024) + 'MB',
+              'Heap Limit': Math.round(mem.jsHeapSizeLimit / 1024 / 1024) + 'MB',
+              'Usage %': Math.round((mem.usedJSHeapSize / mem.jsHeapSizeLimit) * 100) + '%'
+            });
+          } else {
+            console.warn('Memory API not available in this browser');
+          }
+        }
+      });
+      
+      // Detect Unity WebGL support
+      function checkUnitySupport() {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        const webAssembly = typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function';
+        
+        console.info('🔍 Unity WebGL Support Check:');
+        console.info('WebGL Support:', !!gl);
+        console.info('WebAssembly Support:', webAssembly);
+        console.info('Hardware Concurrency:', navigator.hardwareConcurrency || 'Unknown');
+        console.info('Device Memory:', navigator.deviceMemory ? navigator.deviceMemory + 'GB' : 'Unknown');
+        
+        if (!gl || !webAssembly) {
+          console.warn('⚠️ Unity WebGL may not work properly on this browser');
+        }
+      }
+      
+      // Run support check
+      checkUnitySupport();
+    </script>
+  </body>
+</html>
