@@ -16,7 +16,11 @@
       "dest": "$0",
       "headers": {
         "Content-Type": "application/javascript",
-        "Cache-Control": "public, max-age=31536000"
+        "Cache-Control": "public, max-age=31536000",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
       }
     },
     {
@@ -25,7 +29,11 @@
       "headers": {
         "Content-Encoding": "gzip",
         "Content-Type": "text/javascript",
-        "Cache-Control": "public, max-age=31536000"
+        "Cache-Control": "public, max-age=31536000",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
       }
     },
     {
@@ -34,7 +42,11 @@
       "headers": {
         "Content-Encoding": "gzip",
         "Content-Type": "application/octet-stream",
-        "Cache-Control": "public, max-age=31536000"
+        "Cache-Control": "public, max-age=31536000",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
       }
     },
     {
@@ -43,61 +55,90 @@
       "headers": {
         "Content-Encoding": "gzip",
         "Content-Type": "application/octet-stream",
-        "Cache-Control": "public, max-age=31536000"
+        "Cache-Control": "public, max-age=31536000",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
+      }
+    },
+    {
+      "src": "/unity-builds/.*\\.wasm$",
+      "dest": "$0",
+      "headers": {
+        "Content-Type": "application/wasm",
+        "Cache-Control": "public, max-age=31536000",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
+      }
+    },
+    {
+      "src": "/unity-builds/.*\\.data$",
+      "dest": "$0",
+      "headers": {
+        "Content-Type": "application/octet-stream",
+        "Cache-Control": "public, max-age=31536000",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
+      }
+    },
+    {
+      "src": "/static/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|mp4|webp|json))$",
+      "dest": "/static/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
+      }
+    },
+    {
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|mp4|webp|json))$",
+      "dest": "/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=86400",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
       }
     },
     {
       "src": "/unity-builds/(.*)",
       "dest": "/unity-builds/$1",
       "headers": {
-        "Cache-Control": "public, max-age=31536000"
+        "Cache-Control": "public, max-age=31536000",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
       }
     },
     {
       "src": "/static/(.*)",
       "dest": "/static/$1",
       "headers": {
-        "Cache-Control": "public, max-age=31536000"
-      }
-    },
-    {
-      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|mp4|webp))",
-      "dest": "/$1",
-      "headers": {
-        "Cache-Control": "public, max-age=86400"
+        "Cache-Control": "public, max-age=31536000",
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
       }
     },
     {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/index.html",
+      "headers": {
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "DENY",
+        "X-XSS-Protection": "1; mode=block",
+        "Referrer-Policy": "strict-origin-when-cross-origin"
+      }
     }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        }
-      ]
-    }
-  ],
-  "functions": {
-    "app/[[...route]].js": {
-      "maxDuration": 30
-    }
-  }
+  ]
 }
