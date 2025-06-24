@@ -98,3 +98,7 @@ struct.txt
 
 # Vercel deployment files
 .vercel
+
+# Unity WebGL build files (essential for project)
+!public/unity-builds/**
+!public/unity-builds/**/*.gz
