@@ -12,7 +12,7 @@ const UnityGame = ({ onLog, onGameEvent }) => {
   } = useUnityContext({
     loaderUrl: "/unity-builds/medashooter/Build/medashooter.loader.js",
     dataUrl: "/unity-builds/medashooter/Build/medashooter.data.gz",
-    frameworkUrl: "/unity-builds/medashooter/Build/medashooter.framework.js.gz",
+    frameworkUrl: "/unity-builds/medashooter/Build/medashooter.framework.js",
     codeUrl: "/unity-builds/medashooter/Build/medashooter.wasm.gz",
     companyName: "Cryptomeda",
     productName: "Meda Shooter Performance Test",
@@ -199,7 +199,7 @@ function App() {
     const files = [
       "/unity-builds/medashooter/Build/medashooter.loader.js",
       "/unity-builds/medashooter/Build/medashooter.data.gz",
-      "/unity-builds/medashooter/Build/medashooter.framework.js.gz",
+      "/unity-builds/medashooter/Build/medashooter.framework.js",
       "/unity-builds/medashooter/Build/medashooter.wasm.gz"
     ];
 
