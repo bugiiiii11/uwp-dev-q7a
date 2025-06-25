@@ -12,6 +12,18 @@
   ],
   "routes": [
     {
+      "src": "/unity-builds/(.*)",
+      "dest": "/unity-builds/$1"
+    },
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
+    {
+      "src": "/(.*\\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|mp4|webp|json|gzip|gz))",
+      "dest": "/$1"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }
