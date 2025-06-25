@@ -1,3 +1,11 @@
+/unity-builds/test.js.gzip
+  Content-Type: text/javascript
+  Content-Encoding: gzip
+
+/unity-builds/test.js.gz
+  Content-Type: text/javascript
+  Content-Encoding: gzip  
+
 /unity-builds/medashooter/Build/medashooter.framework.js.gz
   Content-Type: text/javascript
   Content-Encoding: gzip
