@@ -61,25 +61,55 @@ const server = http.createServer((req, res) => {
       
       // Special handling for Unity WebGL files
       if (pathname.includes('/unity-builds/')) {
-        if (pathname.endsWith('.framework.js.gz')) {
+        // Handle .framework.js (uncompressed)
+        if (pathname.endsWith('.framework.js') && !pathname.endsWith('.gz') && !pathname.endsWith('.gzip')) {
           headers = {
-            'Content-Encoding': 'gzip',
-            'Content-Type': 'text/javascript',
+            'Content-Type': 'application/javascript',
             'Cache-Control': 'public, max-age=31536000'
           };
-        } else if (pathname.endsWith('.data.gz')) {
+        }
+        // Handle .framework.js.gz (compressed with .gz)
+        else if (pathname.endsWith('.framework.js.gz')) {
+          headers = {
+            'Content-Encoding': 'gzip',
+            'Content-Type': 'application/javascript',
+            'Cache-Control': 'public, max-age=31536000'
+          };
+        }
+        // Handle .data.gz (compressed with .gz)
+        else if (pathname.endsWith('.data.gz')) {
           headers = {
             'Content-Encoding': 'gzip',
             'Content-Type': 'application/octet-stream',
             'Cache-Control': 'public, max-age=31536000'
           };
-        } else if (pathname.endsWith('.wasm.gz')) {
+        }
+        // Handle .data.gzip (compressed with .gzip) - NEW
+        else if (pathname.endsWith('.data.gzip')) {
           headers = {
             'Content-Encoding': 'gzip',
             'Content-Type': 'application/octet-stream',
             'Cache-Control': 'public, max-age=31536000'
           };
-        } else if (pathname.endsWith('.loader.js')) {
+        }
+        // Handle .wasm.gz (compressed with .gz)
+        else if (pathname.endsWith('.wasm.gz')) {
+          headers = {
+            'Content-Encoding': 'gzip',
+            'Content-Type': 'application/octet-stream',
+            'Cache-Control': 'public, max-age=31536000'
+          };
+        }
+        // Handle .wasm.gzip (compressed with .gzip) - NEW
+        else if (pathname.endsWith('.wasm.gzip')) {
+          headers = {
+            'Content-Encoding': 'gzip',
+            'Content-Type': 'application/octet-stream',
+            'Cache-Control': 'public, max-age=31536000'
+          };
+        }
+        // Handle .loader.js (uncompressed)
+        else if (pathname.endsWith('.loader.js')) {
           headers = {
             'Content-Type': 'application/javascript',
             'Cache-Control': 'public, max-age=31536000'
@@ -96,6 +126,8 @@ const server = http.createServer((req, res) => {
 server.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
   console.log('Unity WebGL files will be served with proper compression headers');
-  console.log('- framework.js.gz: Content-Type: text/javascript + gzip');
+  console.log('- framework.js (uncompressed): Content-Type: application/javascript');
+  console.log('- framework.js.gz: Content-Type: application/javascript + gzip');
   console.log('- data.gz & wasm.gz: Content-Type: application/octet-stream + gzip');
+  console.log('- data.gzip & wasm.gzip: Content-Type: application/octet-stream + gzip');
 });
