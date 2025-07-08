@@ -3,7 +3,7 @@ import { Unity, useUnityContext } from 'react-unity-webgl';
 import './App.css';
 
 // Unity Game Component
-const UnityGame = ({ onLog, onGameEvent }) => {
+const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
   const {
     unityProvider,
     loadingProgression,
@@ -42,6 +42,11 @@ const UnityGame = ({ onLog, onGameEvent }) => {
       onLog(`✅ Unity loaded successfully in ${loadTime}ms!`, 'success');
       onGameEvent('loaded');
       
+      // Send wallet address if available
+      if (walletAddress) {
+        sendWalletToUnity(walletAddress);
+      }
+      
       // Start performance monitoring
       const perfInterval = setInterval(() => {
         const memory = performance.memory || {};
@@ -54,24 +59,34 @@ const UnityGame = ({ onLog, onGameEvent }) => {
 
       return () => clearInterval(perfInterval);
     }
-  }, [isLoaded, onGameEvent, onLog, startTime]);
+  }, [isLoaded, onGameEvent, onLog, startTime, walletAddress]);
 
-  // Test wallet communication
-  const testWallet = useCallback(() => {
-    if (sendMessage && isLoaded) {
-      const testAddress = "0x742d35Cc6d7B2D2c6291b0A8c7B9C85C50F69E8A";
-      onLog(`📤 Testing wallet communication: ${testAddress}`, 'info');
+  // Send wallet address to Unity
+  const sendWalletToUnity = useCallback((address) => {
+    if (sendMessage && isLoaded && address) {
+      onLog(`📤 Sending wallet to Unity: ${address}`, 'info');
       
       try {
-        sendMessage('JavascriptHook', 'SetWalletAddress', testAddress);
+        sendMessage('JavascriptHook', 'SetWalletAddress', address);
         onLog('✅ Wallet message sent to Unity', 'success');
       } catch (error) {
         onLog(`❌ Wallet communication failed: ${error.message}`, 'error');
       }
-    } else {
-      onLog('❌ Unity not ready for communication', 'error');
     }
   }, [sendMessage, isLoaded, onLog]);
+
+  // Update wallet when it changes
+  useEffect(() => {
+    if (isLoaded && walletAddress) {
+      sendWalletToUnity(walletAddress);
+    }
+  }, [walletAddress, isLoaded, sendWalletToUnity]);
+
+  // Test wallet communication
+  const testWallet = useCallback(() => {
+    const testAddress = walletAddress || "0x742d35Cc6d7B2D2c6291b0A8c7B9C85C50F69E8A";
+    sendWalletToUnity(testAddress);
+  }, [walletAddress, sendWalletToUnity]);
 
   if (!unityProvider) {
     return (
@@ -90,6 +105,7 @@ const UnityGame = ({ onLog, onGameEvent }) => {
           <div>FPS: {performanceData.fps}</div>
           <div>RAM: {performanceData.memory}MB</div>
           <div>Load: {performanceData.loadTime}ms</div>
+          {walletAddress && <div>Wallet: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</div>}
         </div>
       )}
 
@@ -143,12 +159,23 @@ const UnityGame = ({ onLog, onGameEvent }) => {
   );
 };
 
-// Main App Component
+// Main App Component with Web3 Integration
 function App() {
   const [logs, setLogs] = useState([]);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameState, setGameState] = useState('idle');
   const [systemInfo, setSystemInfo] = useState({});
+  const [walletAddress, setWalletAddress] = useState(null);
+
+  // Check for wallet address from URL params (for iframe integration)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const address = urlParams.get('wallet');
+    if (address) {
+      setWalletAddress(address);
+      addLog(`🔗 Wallet address received: ${address}`, 'success');
+    }
+  }, []);
 
   // Enhanced logging
   const addLog = useCallback((message, type = 'info') => {
@@ -186,10 +213,28 @@ function App() {
       case 'loaded':
         setGameState('loaded');
         addLog('🎯 Game state: LOADED', 'success');
+        
+        // Notify parent window that game is loaded (for iframe integration)
+        if (window.parent !== window) {
+          window.parent.postMessage({ type: 'MEDASHOOTER_LOADED' }, '*');
+        }
         break;
       default:
         addLog(`🔔 Game event: ${event}`, 'info');
     }
+  }, [addLog]);
+
+  // Listen for messages from parent window
+  useEffect(() => {
+    const handleMessage = (event) => {
+      if (event.data.type === 'SET_WALLET_ADDRESS') {
+        setWalletAddress(event.data.address);
+        addLog(`🔗 Wallet updated via postMessage: ${event.data.address}`, 'success');
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
   }, [addLog]);
 
   // Test Unity files
@@ -227,7 +272,7 @@ function App() {
 
   // Start game
   const startGame = () => {
-    addLog('🚀 Starting Unity WebGL performance test...', 'info');
+    addLog('🚀 Starting Unity WebGL with Web3 integration...', 'info');
     setGameStarted(true);
     setGameState('loading');
   };
@@ -236,8 +281,13 @@ function App() {
     <div className="app">
       {/* Header */}
       <header className="app-header">
-        <h1>🎮 Unity WebGL Performance Test</h1>
-        <p>Development Environment - Performance Analysis</p>
+        <h1>🎮 MedaShooter - Web3 Game</h1>
+        <p>Development Environment - Swarm Resistance Integration</p>
+        {walletAddress && (
+          <div className="wallet-info">
+            Connected: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+          </div>
+        )}
       </header>
 
       {/* Status Dashboard */}
@@ -247,6 +297,7 @@ function App() {
           <div className="status-grid">
             <span>State:</span><span className={`status-${gameState}`}>{gameState.toUpperCase()}</span>
             <span>Started:</span><span>{gameStarted ? 'Yes' : 'No'}</span>
+            <span>Wallet:</span><span>{walletAddress ? 'Connected' : 'Not Connected'}</span>
           </div>
         </div>
 
@@ -268,7 +319,7 @@ function App() {
           disabled={gameStarted}
           className={`control-button ${gameStarted ? 'disabled' : 'primary'}`}
         >
-          {gameStarted ? '🎮 Game Running' : '🚀 Start Performance Test'}
+          {gameStarted ? '🎮 Game Running' : '🚀 Start MedaShooter'}
         </button>
 
         <button onClick={testUnityFiles} className="control-button secondary">
@@ -287,7 +338,11 @@ function App() {
       {/* Unity Game */}
       {gameStarted && (
         <div className="game-section">
-          <UnityGame onLog={addLog} onGameEvent={handleGameEvent} />
+          <UnityGame 
+            walletAddress={walletAddress}
+            onLog={addLog} 
+            onGameEvent={handleGameEvent} 
+          />
         </div>
       )}
 
