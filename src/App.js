@@ -9,6 +9,8 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
     loadingProgression,
     isLoaded,
     sendMessage,
+    addEventListener,
+    removeEventListener
   } = useUnityContext({
     loaderUrl: "/unity-builds/medashooter/Build/medashooter.loader.js",
     dataUrl: "/unity-builds/medashooter/Build/medashooter.data.gzip",
@@ -27,6 +29,54 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
   });
 
   const [startTime] = useState(Date.now());
+  const [gameFullyLoaded, setGameFullyLoaded] = useState(false);
+  const [walletSendTrigger, setWalletSendTrigger] = useState(0);
+
+  // 🎯 PERFECT TIMING: Handle Unity's ReadyToWalletAddress event
+  const handleReadyToWalletAddress = useCallback(() => {
+    onLog('🎯 Unity sent ReadyToWalletAddress - perfect timing achieved!', 'success');
+    setGameFullyLoaded(true);
+    setWalletSendTrigger(prev => prev + 1); // Trigger wallet sending
+  }, [onLog]);
+
+  // Handle Game Over event
+  const handleGameOver = useCallback(() => {
+    onLog('🎮 Game Over received from Unity', 'info');
+    onGameEvent('gameover');
+  }, [onLog, onGameEvent]);
+
+  // ✅ Set up Unity event listeners - EXACTLY like the old working system
+  useEffect(() => {
+    addEventListener('ReadyToWalletAddress', handleReadyToWalletAddress);
+    addEventListener('GameOver', handleGameOver);
+
+    return () => {
+      removeEventListener('ReadyToWalletAddress', handleReadyToWalletAddress);
+      removeEventListener('GameOver', handleGameOver);
+    };
+  }, [addEventListener, removeEventListener, handleReadyToWalletAddress, handleGameOver]);
+
+  // ✅ Send wallet when Unity is ready - PERFECT TIMING!
+  useEffect(() => {
+    if (gameFullyLoaded && walletAddress && walletSendTrigger > 0) {
+      onLog(`📤 Sending wallet at perfect timing: ${walletAddress}`, 'info');
+      
+      try {
+        sendMessage('JavascriptHook', 'SetWalletAddress', walletAddress);
+        onLog('✅ Wallet sent successfully using existing Unity infrastructure!', 'success');
+        
+        // Notify parent window that wallet was sent successfully
+        if (window.parent !== window) {
+          window.parent.postMessage({ 
+            type: 'MEDASHOOTER_WALLET_SENT_SUCCESSFULLY',
+            address: walletAddress 
+          }, '*');
+        }
+      } catch (error) {
+        onLog(`❌ Wallet communication failed: ${error.message}`, 'error');
+      }
+    }
+  }, [walletSendTrigger, walletAddress, gameFullyLoaded, sendMessage, onLog]);
 
   // Log Unity status
   useEffect(() => {
@@ -39,13 +89,12 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
   useEffect(() => {
     if (isLoaded) {
       const loadTime = Date.now() - startTime;
-      onLog(`✅ Unity loaded successfully in ${loadTime}ms!`, 'success');
+      onLog(`✅ Unity WebGL loaded successfully in ${loadTime}ms!`, 'success');
+      onLog(`⏳ Waiting for Unity's ReadyToWalletAddress signal...`, 'info');
       onGameEvent('loaded');
       
-      // Send wallet address if available
-      if (walletAddress) {
-        sendWalletToUnity(walletAddress);
-      }
+      // DON'T send wallet immediately - wait for ReadyToWalletAddress event!
+      // The existing Unity code will call SendWalletAddressReady() which triggers our event
       
       // Start performance monitoring
       const perfInterval = setInterval(() => {
@@ -59,34 +108,22 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
 
       return () => clearInterval(perfInterval);
     }
-  }, [isLoaded, onGameEvent, onLog, startTime, walletAddress]);
+  }, [isLoaded, onGameEvent, onLog, startTime]);
 
-  // Send wallet address to Unity
-  const sendWalletToUnity = useCallback((address) => {
-    if (sendMessage && isLoaded && address) {
-      onLog(`📤 Sending wallet to Unity: ${address}`, 'info');
-      
-      try {
-        sendMessage('JavascriptHook', 'SetWalletAddress', address);
-        onLog('✅ Wallet message sent to Unity', 'success');
-      } catch (error) {
-        onLog(`❌ Wallet communication failed: ${error.message}`, 'error');
-      }
-    }
-  }, [sendMessage, isLoaded, onLog]);
-
-  // Update wallet when it changes
-  useEffect(() => {
-    if (isLoaded && walletAddress) {
-      sendWalletToUnity(walletAddress);
-    }
-  }, [walletAddress, isLoaded, sendWalletToUnity]);
-
-  // Test wallet communication
+  // Test wallet communication - for debugging
   const testWallet = useCallback(() => {
     const testAddress = walletAddress || "0x742d35Cc6d7B2D2c6291b0A8c7B9C85C50F69E8A";
-    sendWalletToUnity(testAddress);
-  }, [walletAddress, sendWalletToUnity]);
+    
+    if (sendMessage) {
+      onLog(`📤 Manual test: ${testAddress}`, 'info');
+      try {
+        sendMessage('JavascriptHook', 'SetWalletAddress', testAddress);
+        onLog('✅ Manual test wallet sent!', 'success');
+      } catch (error) {
+        onLog(`❌ Manual test failed: ${error.message}`, 'error');
+      }
+    }
+  }, [walletAddress, sendMessage, onLog]);
 
   if (!unityProvider) {
     return (
@@ -106,6 +143,9 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
           <div>RAM: {performanceData.memory}MB</div>
           <div>Load: {performanceData.loadTime}ms</div>
           {walletAddress && <div>Wallet: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</div>}
+          <div className={gameFullyLoaded ? 'status-ready' : 'status-waiting'}>
+            {gameFullyLoaded ? '✅ Unity Ready' : '⏳ Waiting for Unity'}
+          </div>
         </div>
       )}
 
@@ -153,6 +193,11 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
           >
             📊 Check Performance
           </button>
+          <div className="status-info">
+            <span className={gameFullyLoaded ? 'text-green-500' : 'text-orange-500'}>
+              {gameFullyLoaded ? '🎯 Perfect Timing Achieved!' : '⏳ Waiting for Unity Signal...'}
+            </span>
+          </div>
         </div>
       )}
     </div>
@@ -219,6 +264,9 @@ function App() {
           window.parent.postMessage({ type: 'MEDASHOOTER_LOADED' }, '*');
         }
         break;
+      case 'gameover':
+        addLog('🎮 Game Over!', 'info');
+        break;
       default:
         addLog(`🔔 Game event: ${event}`, 'info');
     }
@@ -272,7 +320,7 @@ function App() {
 
   // Start game
   const startGame = () => {
-    addLog('🚀 Starting Unity WebGL with Web3 integration...', 'info');
+    addLog('🚀 Starting Unity WebGL with perfect timing integration...', 'info');
     setGameStarted(true);
     setGameState('loading');
   };
@@ -282,7 +330,7 @@ function App() {
       {/* Header */}
       <header className="app-header">
         <h1>🎮 MedaShooter - Web3 Game</h1>
-        <p>Development Environment - Swarm Resistance Integration</p>
+        <p>Development Environment - Perfect Timing Integration ✅</p>
         {walletAddress && (
           <div className="wallet-info">
             Connected: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
@@ -298,6 +346,7 @@ function App() {
             <span>State:</span><span className={`status-${gameState}`}>{gameState.toUpperCase()}</span>
             <span>Started:</span><span>{gameStarted ? 'Yes' : 'No'}</span>
             <span>Wallet:</span><span>{walletAddress ? 'Connected' : 'Not Connected'}</span>
+            <span>Integration:</span><span className="text-green-500">Perfect Timing ✅</span>
           </div>
         </div>
 
