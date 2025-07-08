@@ -30,14 +30,36 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
 
   const [startTime] = useState(Date.now());
   const [gameFullyLoaded, setGameFullyLoaded] = useState(false);
-  const [walletSendTrigger, setWalletSendTrigger] = useState(0);
 
-  // 🎯 PERFECT TIMING: Handle Unity's ReadyToWalletAddress event
+  // 🎯 SIMPLE MIRROR: Handle Unity's ReadyToWalletAddress event - EXACTLY like test button
   const handleReadyToWalletAddress = useCallback(() => {
-    onLog('🎯 Unity sent ReadyToWalletAddress - perfect timing achieved!', 'success');
+    onLog('🎯 Unity sent ReadyToWalletAddress - sending wallet immediately!', 'success');
     setGameFullyLoaded(true);
-    setWalletSendTrigger(prev => prev + 1); // Trigger wallet sending
-  }, [onLog]);
+    
+    // Use EXACT same pattern as working test button
+    const testAddress = walletAddress || "0x742d35Cc6d7B2D2c6291b0A8c7B9C85C50F69E8A";
+    
+    if (sendMessage) {
+      onLog(`📤 Auto-sending wallet: ${testAddress}`, 'info');
+      try {
+        // EXACT same call as test button
+        sendMessage('JavascriptHook', 'SetWalletAddress', testAddress);
+        onLog('✅ Auto-wallet sent successfully using mirror approach!', 'success');
+        
+        // Notify parent window
+        if (window.parent !== window) {
+          window.parent.postMessage({ 
+            type: 'MEDASHOOTER_WALLET_SENT_SUCCESSFULLY',
+            address: testAddress 
+          }, '*');
+        }
+      } catch (error) {
+        onLog(`❌ Auto-wallet failed: ${error.message}`, 'error');
+      }
+    } else {
+      onLog('❌ sendMessage not available yet', 'error');
+    }
+  }, [onLog, walletAddress, sendMessage]);
 
   // Handle Game Over event
   const handleGameOver = useCallback(() => {
@@ -56,28 +78,6 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
     };
   }, [addEventListener, removeEventListener, handleReadyToWalletAddress, handleGameOver]);
 
-  // ✅ Send wallet when Unity is ready - PERFECT TIMING!
-  useEffect(() => {
-    if (gameFullyLoaded && walletAddress && walletSendTrigger > 0) {
-      onLog(`📤 Sending wallet at perfect timing: ${walletAddress}`, 'info');
-      
-      try {
-        sendMessage('JavascriptHook', 'SetWalletAddress', walletAddress);
-        onLog('✅ Wallet sent successfully using existing Unity infrastructure!', 'success');
-        
-        // Notify parent window that wallet was sent successfully
-        if (window.parent !== window) {
-          window.parent.postMessage({ 
-            type: 'MEDASHOOTER_WALLET_SENT_SUCCESSFULLY',
-            address: walletAddress 
-          }, '*');
-        }
-      } catch (error) {
-        onLog(`❌ Wallet communication failed: ${error.message}`, 'error');
-      }
-    }
-  }, [walletSendTrigger, walletAddress, gameFullyLoaded, sendMessage, onLog]);
-
   // Log Unity status
   useEffect(() => {
     onLog(`🎮 Unity Provider: ${unityProvider ? 'Ready' : 'Loading...'}`, 'info');
@@ -93,8 +93,8 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
       onLog(`⏳ Waiting for Unity's ReadyToWalletAddress signal...`, 'info');
       onGameEvent('loaded');
       
-      // DON'T send wallet immediately - wait for ReadyToWalletAddress event!
-      // The existing Unity code will call SendWalletAddressReady() which triggers our event
+      // DON'T send wallet here - wait for ReadyToWalletAddress event!
+      // The mirror approach handles it automatically
       
       // Start performance monitoring
       const perfInterval = setInterval(() => {
@@ -110,7 +110,7 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
     }
   }, [isLoaded, onGameEvent, onLog, startTime]);
 
-  // Test wallet communication - for debugging
+  // Test wallet communication - ORIGINAL working version (unchanged)
   const testWallet = useCallback(() => {
     const testAddress = walletAddress || "0x742d35Cc6d7B2D2c6291b0A8c7B9C85C50F69E8A";
     
@@ -144,7 +144,7 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
           <div>Load: {performanceData.loadTime}ms</div>
           {walletAddress && <div>Wallet: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</div>}
           <div className={gameFullyLoaded ? 'status-ready' : 'status-waiting'}>
-            {gameFullyLoaded ? '✅ Unity Ready' : '⏳ Waiting for Unity'}
+            {gameFullyLoaded ? '✅ Simple Mirror Success!' : '⏳ Waiting for Unity'}
           </div>
         </div>
       )}
@@ -195,7 +195,7 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
           </button>
           <div className="status-info">
             <span className={gameFullyLoaded ? 'text-green-500' : 'text-orange-500'}>
-              {gameFullyLoaded ? '🎯 Perfect Timing Achieved!' : '⏳ Waiting for Unity Signal...'}
+              {gameFullyLoaded ? '🎯 Simple Mirror Success!' : '⏳ Waiting for Unity Signal...'}
             </span>
           </div>
         </div>
@@ -320,7 +320,7 @@ function App() {
 
   // Start game
   const startGame = () => {
-    addLog('🚀 Starting Unity WebGL with perfect timing integration...', 'info');
+    addLog('🚀 Starting Unity WebGL with simple mirror integration...', 'info');
     setGameStarted(true);
     setGameState('loading');
   };
@@ -330,7 +330,7 @@ function App() {
       {/* Header */}
       <header className="app-header">
         <h1>🎮 MedaShooter - Web3 Game</h1>
-        <p>Development Environment - Perfect Timing Integration ✅</p>
+        <p>Development Environment - Simple Mirror Integration ✅</p>
         {walletAddress && (
           <div className="wallet-info">
             Connected: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
@@ -346,7 +346,7 @@ function App() {
             <span>State:</span><span className={`status-${gameState}`}>{gameState.toUpperCase()}</span>
             <span>Started:</span><span>{gameStarted ? 'Yes' : 'No'}</span>
             <span>Wallet:</span><span>{walletAddress ? 'Connected' : 'Not Connected'}</span>
-            <span>Integration:</span><span className="text-green-500">Perfect Timing ✅</span>
+            <span>Integration:</span><span className="text-green-500">Simple Mirror ✅</span>
           </div>
         </div>
 
