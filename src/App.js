@@ -3,7 +3,7 @@ import { Unity, useUnityContext } from 'react-unity-webgl';
 import './App.css';
 
 // Unity Game Component
-const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
+const UnityGame = ({ walletAddress, onLog, onGameEvent, securityStatus }) => {
   const {
     unityProvider,
     loadingProgression,
@@ -31,7 +31,7 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
   const [startTime] = useState(Date.now());
   const [gameFullyLoaded, setGameFullyLoaded] = useState(false);
 
-  // 🎯 SIMPLE MIRROR: Handle Unity's ReadyToWalletAddress event - EXACTLY like test button
+  // 🎯 SIMPLE MIRROR: Handle Unity's ReadyToWalletAddress event - EXACTLY like test button (UNCHANGED)
   const handleReadyToWalletAddress = useCallback(() => {
     onLog('🎯 Unity sent ReadyToWalletAddress - sending wallet immediately!', 'success');
     setGameFullyLoaded(true);
@@ -61,13 +61,13 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
     }
   }, [onLog, walletAddress, sendMessage]);
 
-  // Handle Game Over event
+  // Handle Game Over event (UNCHANGED)
   const handleGameOver = useCallback(() => {
     onLog('🎮 Game Over received from Unity', 'info');
     onGameEvent('gameover');
   }, [onLog, onGameEvent]);
 
-  // ✅ Set up Unity event listeners - EXACTLY like the old working system
+  // ✅ Set up Unity event listeners - EXACTLY like the old working system (UNCHANGED)
   useEffect(() => {
     addEventListener('ReadyToWalletAddress', handleReadyToWalletAddress);
     addEventListener('GameOver', handleGameOver);
@@ -78,14 +78,15 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
     };
   }, [addEventListener, removeEventListener, handleReadyToWalletAddress, handleGameOver]);
 
-  // Log Unity status
+  // Log Unity status (ENHANCED)
   useEffect(() => {
     onLog(`🎮 Unity Provider: ${unityProvider ? 'Ready' : 'Loading...'}`, 'info');
     onLog(`📊 Loading Progress: ${Math.round(loadingProgression * 100)}%`, 'progress');
     onLog(`🎯 Game Loaded: ${isLoaded}`, 'info');
-  }, [unityProvider, loadingProgression, isLoaded, onLog]);
+    onLog(`🛡️ Security Status: ${securityStatus.level}`, securityStatus.level === 'secure' ? 'success' : 'warning');
+  }, [unityProvider, loadingProgression, isLoaded, onLog, securityStatus]);
 
-  // Game loaded event
+  // Game loaded event (UNCHANGED)
   useEffect(() => {
     if (isLoaded) {
       const loadTime = Date.now() - startTime;
@@ -110,7 +111,7 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
     }
   }, [isLoaded, onGameEvent, onLog, startTime]);
 
-  // Test wallet communication - ORIGINAL working version (unchanged)
+  // Test wallet communication - ORIGINAL working version (UNCHANGED)
   const testWallet = useCallback(() => {
     const testAddress = walletAddress || "0x742d35Cc6d7B2D2c6291b0A8c7B9C85C50F69E8A";
     
@@ -136,7 +137,7 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
 
   return (
     <div className="unity-container">
-      {/* Performance Overlay */}
+      {/* Performance Overlay (ENHANCED) */}
       {isLoaded && (
         <div className="performance-overlay">
           <div>FPS: {performanceData.fps}</div>
@@ -146,10 +147,14 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
           <div className={gameFullyLoaded ? 'status-ready' : 'status-waiting'}>
             {gameFullyLoaded ? '✅ Simple Mirror Success!' : '⏳ Waiting for Unity'}
           </div>
+          <div className={`status-${securityStatus.level}`}>
+            {securityStatus.level === 'secure' ? '🛡️ Secured' : 
+             securityStatus.level === 'warning' ? '⚠️ Warning' : '🔓 Dev Mode'}
+          </div>
         </div>
       )}
 
-      {/* Loading Overlay */}
+      {/* Loading Overlay (ENHANCED) */}
       {!isLoaded && (
         <div className="loading-overlay">
           <div className="loading-content">
@@ -164,24 +169,34 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
             <div className="loading-percentage">
               {Math.round(loadingProgression * 100)}%
             </div>
+            <div style={{ 
+              fontSize: '12px', 
+              color: securityStatus.level === 'secure' ? '#60a5fa' : '#fbbf24', 
+              marginTop: '10px' 
+            }}>
+              🛡️ Security: {securityStatus.level}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Unity Canvas */}
+      {/* Unity Canvas (ENHANCED with security border) */}
       <Unity 
         unityProvider={unityProvider}
         className="unity-canvas"
         style={{
           width: 1024,
           height: 768,
-          border: "3px solid #FF8C00",
+          border: `3px solid ${
+            securityStatus.level === 'secure' ? '#60a5fa' : 
+            securityStatus.level === 'warning' ? '#fbbf24' : '#FF8C00'
+          }`,
           borderRadius: "8px",
           background: "#000"
         }}
       />
 
-      {/* Game Controls */}
+      {/* Game Controls (ENHANCED) */}
       {isLoaded && (
         <div className="game-controls">
           <button onClick={testWallet} className="test-button">
@@ -197,6 +212,9 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
             <span className={gameFullyLoaded ? 'text-green-500' : 'text-orange-500'}>
               {gameFullyLoaded ? '🎯 Simple Mirror Success!' : '⏳ Waiting for Unity Signal...'}
             </span>
+            <span className={`text-${securityStatus.level === 'secure' ? 'blue' : 'yellow'}-400`}>
+              🛡️ Security: {securityStatus.level}
+            </span>
           </div>
         </div>
       )}
@@ -204,25 +222,171 @@ const UnityGame = ({ walletAddress, onLog, onGameEvent }) => {
   );
 };
 
-// Main App Component with Web3 Integration
+// Main App Component with Enhanced Security
 function App() {
   const [logs, setLogs] = useState([]);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameState, setGameState] = useState('idle');
   const [systemInfo, setSystemInfo] = useState({});
   const [walletAddress, setWalletAddress] = useState(null);
+  const [securityStatus, setSecurityStatus] = useState({
+    level: 'checking',
+    message: 'Checking security...',
+    originVerified: false,
+    tokenVerified: false
+  });
 
-  // Check for wallet address from URL params (for iframe integration)
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const address = urlParams.get('wallet');
-    if (address) {
-      setWalletAddress(address);
-      addLog(`🔗 Wallet address received: ${address}`, 'success');
+  // 🛡️ ENHANCED PHASE 1: Security configuration
+  const getSecurityConfig = () => {
+    const isDev = process.env.NODE_ENV === 'development';
+    const currentOrigin = window.location.origin;
+    
+    // Base configuration
+    const config = {
+      // Production domains
+      production: [
+        'https://swarm-resistance-frontend-dev.vercel.app',
+        'https://uwp-dev-q7a.vercel.app',
+        'https://www.cryptomeda.tech',
+        'https://cryptomeda.tech'
+      ],
+      // Development domains
+      development: [
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'http://localhost:8080',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:5173'
+      ],
+      // Custom domains from environment variables
+      custom: []
+    };
+
+    // Add custom domains from environment variables
+    if (process.env.REACT_APP_ALLOWED_DOMAINS) {
+      const customDomains = process.env.REACT_APP_ALLOWED_DOMAINS.split(',').map(d => d.trim());
+      config.custom = customDomains;
     }
+
+    // Combine all allowed domains
+    const allowedDomains = [
+      ...config.production,
+      ...(isDev ? config.development : []),
+      ...config.custom
+    ];
+
+    return {
+      allowedDomains,
+      isDev,
+      currentOrigin,
+      securityEnabled: !isDev || process.env.REACT_APP_ENABLE_SECURITY === 'true'
+    };
+  };
+
+  // 🛡️ ENHANCED PHASE 1: Security verification
+  const verifySecurityContext = useCallback(() => {
+    const securityConfig = getSecurityConfig();
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // Get security parameters
+    const originParam = urlParams.get('origin');
+    const tokenParam = urlParams.get('token');
+    
+    let securityLevel = 'insecure';
+    let message = 'Security check failed';
+    let originVerified = false;
+    let tokenVerified = false;
+
+    // Check if security is enabled
+    if (!securityConfig.securityEnabled) {
+      securityLevel = 'development';
+      message = 'Development mode - security disabled';
+      originVerified = true;
+      tokenVerified = true;
+    } else {
+      // Verify origin parameter
+      if (originParam && securityConfig.allowedDomains.includes(originParam)) {
+        originVerified = true;
+      }
+      
+      // Verify token (simple timestamp-based verification)
+      if (tokenParam) {
+        try {
+          const decoded = atob(tokenParam);
+          const [origin, timestamp] = decoded.split(':');
+          const age = Date.now() - parseInt(timestamp);
+          
+          // Token valid for 1 hour
+          if (age < 60 * 60 * 1000 && origin === originParam) {
+            tokenVerified = true;
+          }
+        } catch (error) {
+          console.warn('Invalid token format');
+        }
+      }
+      
+      // Determine security level
+      if (originVerified && tokenVerified) {
+        securityLevel = 'secure';
+        message = 'Security verification passed';
+      } else if (originVerified) {
+        securityLevel = 'warning';
+        message = 'Origin verified but token missing/invalid';
+      } else {
+        securityLevel = 'insecure';
+        message = 'Unauthorized access detected';
+      }
+    }
+
+    const status = {
+      level: securityLevel,
+      message,
+      originVerified,
+      tokenVerified,
+      details: {
+        originParam,
+        tokenParam: tokenParam ? 'present' : 'missing',
+        allowedDomains: securityConfig.allowedDomains,
+        securityEnabled: securityConfig.securityEnabled
+      }
+    };
+
+    setSecurityStatus(status);
+    addLog(`🛡️ Security Status: ${message}`, 
+      securityLevel === 'secure' ? 'success' : 
+      securityLevel === 'warning' ? 'warning' : 'error');
+    
+    return status;
   }, []);
 
-  // Enhanced logging
+  // 🛡️ ENHANCED PHASE 1: Wallet parameter extraction with security
+  useEffect(() => {
+    const securityStatus = verifySecurityContext();
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const address = urlParams.get('wallet');
+    
+    if (address) {
+      // Basic wallet address validation
+      const isValidAddress = /^0x[a-fA-F0-9]{40}$/.test(address);
+      
+      if (isValidAddress) {
+        // Only set wallet if security check passed or in development
+        if (securityStatus.level === 'secure' || securityStatus.level === 'development') {
+          setWalletAddress(address);
+          addLog(`🔗 Wallet address received: ${address}`, 'success');
+        } else {
+          addLog(`🚫 Wallet blocked due to security check: ${address}`, 'warning');
+        }
+      } else {
+        addLog(`❌ Invalid wallet address format: ${address}`, 'error');
+      }
+    } else {
+      addLog('ℹ️ No wallet parameter provided', 'info');
+    }
+  }, [verifySecurityContext]);
+
+  // Enhanced logging (UNCHANGED)
   const addLog = useCallback((message, type = 'info') => {
     const timestamp = new Date().toLocaleTimeString();
     const logEntry = {
@@ -236,7 +400,7 @@ function App() {
     setLogs(prev => [...prev.slice(-49), logEntry]); // Keep last 50 logs
   }, []);
 
-  // Gather system info
+  // Gather system info (ENHANCED)
   useEffect(() => {
     const info = {
       userAgent: navigator.userAgent,
@@ -245,14 +409,18 @@ function App() {
       cookieEnabled: navigator.cookieEnabled,
       hardwareConcurrency: navigator.hardwareConcurrency,
       deviceMemory: navigator.deviceMemory || 'Unknown',
-      connection: navigator.connection?.effectiveType || 'Unknown'
+      connection: navigator.connection?.effectiveType || 'Unknown',
+      referrer: document.referrer || 'none',
+      origin: window.location.origin
     };
     
     setSystemInfo(info);
     addLog('🖥️ System information gathered', 'info');
+    addLog(`🌐 Origin: ${info.origin}`, 'info');
+    addLog(`🔗 Referrer: ${info.referrer}`, 'info');
   }, [addLog]);
 
-  // Game event handler
+  // Game event handler (UNCHANGED)
   const handleGameEvent = useCallback((event) => {
     switch (event) {
       case 'loaded':
@@ -272,12 +440,31 @@ function App() {
     }
   }, [addLog]);
 
-  // Listen for messages from parent window
+  // 🛡️ ENHANCED PHASE 1: Message handler with enhanced security
   useEffect(() => {
     const handleMessage = (event) => {
+      const securityConfig = getSecurityConfig();
+      
+      // Enhanced security check
+      if (securityConfig.securityEnabled) {
+        if (!securityConfig.allowedDomains.includes(event.origin)) {
+          addLog(`🚫 Message blocked from unauthorized origin: ${event.origin}`, 'error');
+          return;
+        }
+      }
+      
+      addLog(`📥 Message received from ${event.origin}`, 'info');
+      
       if (event.data.type === 'SET_WALLET_ADDRESS') {
-        setWalletAddress(event.data.address);
-        addLog(`🔗 Wallet updated via postMessage: ${event.data.address}`, 'success');
+        const address = event.data.address;
+        const isValidAddress = /^0x[a-fA-F0-9]{40}$/.test(address);
+        
+        if (isValidAddress) {
+          setWalletAddress(address);
+          addLog(`🔗 Wallet updated via secure postMessage: ${address}`, 'success');
+        } else {
+          addLog(`❌ Invalid wallet address: ${address}`, 'error');
+        }
       }
     };
 
@@ -285,7 +472,7 @@ function App() {
     return () => window.removeEventListener('message', handleMessage);
   }, [addLog]);
 
-  // Test Unity files
+  // Test Unity files (UNCHANGED)
   const testUnityFiles = async () => {
     addLog('🔍 Testing Unity file accessibility...', 'info');
     
@@ -318,27 +505,36 @@ function App() {
     }
   };
 
-  // Start game
+  // Start game (ENHANCED)
   const startGame = () => {
-    addLog('🚀 Starting Unity WebGL with simple mirror integration...', 'info');
+    addLog('🚀 Starting Unity WebGL with enhanced security...', 'info');
+    addLog(`🛡️ Security Level: ${securityStatus.level}`, 
+      securityStatus.level === 'secure' ? 'success' : 'warning');
     setGameStarted(true);
     setGameState('loading');
   };
 
   return (
     <div className="app">
-      {/* Header */}
+      {/* Header (ENHANCED) */}
       <header className="app-header">
         <h1>🎮 MedaShooter - Web3 Game</h1>
-        <p>Development Environment - Simple Mirror Integration ✅</p>
+        <p>Development Environment - Enhanced Security ✅</p>
         {walletAddress && (
           <div className="wallet-info">
             Connected: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+            <span style={{ 
+              color: securityStatus.level === 'secure' ? '#60a5fa' : '#fbbf24', 
+              marginLeft: '10px' 
+            }}>
+              {securityStatus.level === 'secure' ? '🛡️' : 
+               securityStatus.level === 'warning' ? '⚠️' : '🔓'}
+            </span>
           </div>
         )}
       </header>
 
-      {/* Status Dashboard */}
+      {/* Status Dashboard (ENHANCED) */}
       <div className="dashboard">
         <div className="status-card">
           <h3>🎯 Game Status</h3>
@@ -346,22 +542,32 @@ function App() {
             <span>State:</span><span className={`status-${gameState}`}>{gameState.toUpperCase()}</span>
             <span>Started:</span><span>{gameStarted ? 'Yes' : 'No'}</span>
             <span>Wallet:</span><span>{walletAddress ? 'Connected' : 'Not Connected'}</span>
-            <span>Integration:</span><span className="text-green-500">Simple Mirror ✅</span>
+            <span>Security:</span><span className={`text-${
+              securityStatus.level === 'secure' ? 'blue' : 
+              securityStatus.level === 'warning' ? 'yellow' : 'red'
+            }-400`}>
+              {securityStatus.level === 'secure' ? 'Secure 🛡️' : 
+               securityStatus.level === 'warning' ? 'Warning ⚠️' : 
+               securityStatus.level === 'development' ? 'Dev Mode 🔓' : 'Insecure 🚫'}
+            </span>
           </div>
         </div>
 
         <div className="status-card">
-          <h3>🖥️ System Info</h3>
+          <h3>🛡️ Security Info</h3>
           <div className="status-grid">
-            <span>Platform:</span><span>{systemInfo.platform}</span>
-            <span>CPU Cores:</span><span>{systemInfo.hardwareConcurrency}</span>
-            <span>Memory:</span><span>{systemInfo.deviceMemory}GB</span>
-            <span>Connection:</span><span>{systemInfo.connection}</span>
+            <span>Level:</span><span className={`text-${
+              securityStatus.level === 'secure' ? 'green' : 
+              securityStatus.level === 'warning' ? 'yellow' : 'red'
+            }-400`}>{securityStatus.level.toUpperCase()}</span>
+            <span>Origin:</span><span>{securityStatus.originVerified ? '✅' : '❌'}</span>
+            <span>Token:</span><span>{securityStatus.tokenVerified ? '✅' : '❌'}</span>
+            <span>Message:</span><span className="text-sm">{securityStatus.message}</span>
           </div>
         </div>
       </div>
 
-      {/* Controls */}
+      {/* Controls (UNCHANGED) */}
       <div className="controls">
         <button 
           onClick={startGame}
@@ -384,18 +590,19 @@ function App() {
         </button>
       </div>
 
-      {/* Unity Game */}
+      {/* Unity Game (ENHANCED) */}
       {gameStarted && (
         <div className="game-section">
           <UnityGame 
             walletAddress={walletAddress}
             onLog={addLog} 
-            onGameEvent={handleGameEvent} 
+            onGameEvent={handleGameEvent}
+            securityStatus={securityStatus}
           />
         </div>
       )}
 
-      {/* Debug Console */}
+      {/* Debug Console (UNCHANGED) */}
       <div className="debug-console">
         <div className="console-header">
           <h3>🐛 Debug Console ({logs.length}/50)</h3>
